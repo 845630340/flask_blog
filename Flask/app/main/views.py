@@ -31,7 +31,7 @@ def index():
 
 #首页、用户页、编辑个人资料、博客文章单页、编辑单页文章
 
-from flask import render_template,flash,redirect,url_for,request
+from flask import render_template,flash,redirect,url_for,request,abort
 from flask_login import login_required,current_user
 from .. import db
 from .forms import EditProfileForm,PostForm
