@@ -59,9 +59,9 @@ def index():
     return render_template('index.html',form = form , posts = posts, pagination = pagination)
 
 
-@main.route('/user')
-def user():
-    user = User.query.first()
+@main.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username = username).first()
     if user is None:
         abort(404)
     #posts = user.posts.order_by(Post.timestamp.desc()).all()
