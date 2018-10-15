@@ -18,6 +18,14 @@ class Role(db.Model):
 
     def __repr__(self):
         return '<Role %r>' % self.name
+		
+class Follow(db.Model):
+	__tablename__ = 'follows'
+	# 粉丝id
+	follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key = True)
+	# 我关注的人的id
+	followed_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key = True)
+	timestamp = db.Column(db.DateTime,default = datetime.now)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -35,6 +43,19 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(),default = datetime.now)
 
     posts = db.relationship('Post',backref = 'author',lazy = 'dynamic')
+	
+	# 我关注的人
+	followed = db.relationship('Follow',
+								foreign_keys = [Follow.follower_id],
+								backref = db.backref('follower',lazy = 'joined'),
+								lazy = 'dynamic',
+								cascade = 'all,delete-orphan')
+	# 追随者，粉丝
+	follower = db.relationship('Follow',
+								foreign_keys = [Follow.followed_id],
+								backref = db.backref('followed',lazy = 'joined'),
+                                lazy = 'dynamic',
+                                cascade = 'all,delete-orphan')
 
     '''
     # 生成一个令牌，有效期为一小时
@@ -68,6 +89,26 @@ class User(UserMixin, db.Model):
     def ping(self):   # 刷新用户的最后访问时间
         self.last_seen = datetime.now()
         db.session.add(self)
+		
+	def follow(self,user):
+        if not self.is_following(user):
+            f = Follow(follower = self,followed = user)
+            db.session.add(f)
+
+    def unfollow(self,user):
+        f = self.followed.filter_by(followed_id = user.id).first()
+        if f:
+            db.session.delete(f)
+
+    def is_following(self,user):
+        if user.id is None:
+            return False
+        return self.followed.filter_by(followed_id = user.id).first() is not None
+
+    def is_followed_by(self,user):
+        if user.id is None:
+            return False
+        return self.followers.filter_by(follower_id = user.id).first() is not None
 
 
     def __repr__(self):
