@@ -9,7 +9,6 @@ from flask import current_app
 from markdown import markdown
 import bleach
 
-
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer,primary_key = True)
@@ -18,14 +17,12 @@ class Role(db.Model):
 
     def __repr__(self):
         return '<Role %r>' % self.name
-		
+
 class Follow(db.Model):
-	__tablename__ = 'follows'
-	# 粉丝id
-	follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key = True)
-	# 我关注的人的id
-	followed_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key = True)
-	timestamp = db.Column(db.DateTime,default = datetime.now)
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key = True)
+    followed_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key = True)
+    timestamp = db.Column(db.DateTime,default = datetime.utcnow)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -39,21 +36,21 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text())
-    member_since = db.Column(db.DateTime(),default = datetime.now )
-    last_seen = db.Column(db.DateTime(),default = datetime.now)
+    member_since = db.Column(db.DateTime(),default = datetime.utcnow )
+    last_seen = db.Column(db.DateTime(),default = datetime.utcnow)
 
     posts = db.relationship('Post',backref = 'author',lazy = 'dynamic')
-	
-	# 我关注的人
-	followed = db.relationship('Follow',
-								foreign_keys = [Follow.follower_id],
-								backref = db.backref('follower',lazy = 'joined'),
-								lazy = 'dynamic',
-								cascade = 'all,delete-orphan')
-	# 追随者，粉丝
-	follower = db.relationship('Follow',
-								foreign_keys = [Follow.followed_id],
-								backref = db.backref('followed',lazy = 'joined'),
+
+    #你关注了谁
+    followed = db.relationship('Follow',
+                               foreign_keys = [Follow.follower_id],
+                               backref = db.backref('follower',lazy = 'joined'),
+                               lazy = 'dynamic',
+                               cascade = 'all,delete-orphan')
+    # 追随者，粉丝
+    followers = db.relationship('Follow',
+                                foreign_keys = [Follow.followed_id],
+                                backref = db.backref('followed',lazy = 'joined'),
                                 lazy = 'dynamic',
                                 cascade = 'all,delete-orphan')
 
@@ -79,18 +76,19 @@ class User(UserMixin, db.Model):
     def password(self):
         raise AttributeError('password is not a readable attribute')
 
+    # 使用user.password = 'xxx'设置原密码
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    def verify_password(self, password):
+    def verify_password(self,password):
         return check_password_hash(self.password_hash, password)
 
     def ping(self):   # 刷新用户的最后访问时间
-        self.last_seen = datetime.now()
+        self.last_seen = datetime.utcnow()
         db.session.add(self)
-		
-	def follow(self,user):
+
+    def follow(self,user):
         if not self.is_following(user):
             f = Follow(follower = self,followed = user)
             db.session.add(f)
@@ -153,7 +151,7 @@ class Post(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime(),index = True,default = datetime.now)
+    timestamp = db.Column(db.DateTime(),index = True,default = datetime.utcnow)
     author_id = db.Column(db.Integer,db.ForeignKey('users.id'))
 
     @staticmethod

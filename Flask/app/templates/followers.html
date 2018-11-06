@@ -19,7 +19,7 @@
             </a>
         </td>
         <td>
-            {{ follow.timestamp }}
+            {{ moment(follow.timestamp).format('LL') }}
         </td>
     </tr>
     {% endfor %}

@@ -24,7 +24,6 @@ def login():
             #if next is None or not next.startswith('/'):
                 #next = url_for('main.index')     # 这个是当你登录之后返回的页面，可以改为url_for('main.user')
             return redirect(url_for('main.index'))
-
         flash('无效的用户名或者密码')
     return render_template('auth/login.html',form = form)
 
@@ -39,7 +38,7 @@ def logout():
 
 
 
-
+# 注册就是把输入的用户信息存入数据库中，然后进入登录页面
 @auth.route('/register',methods = ['GET','POST'])
 def register():
     form = RegistrationForm()
@@ -107,12 +106,12 @@ def confirm_email():
 '''
 
 
-'''
+
 @auth.before_app_first_request  #会在每次请求前运行，调用ping()函数，更新已登录用户的访问时间，
 def before_request():
     if current_user.is_authenticated:
         current_user.ping()
-'''
+
 
 
 '''

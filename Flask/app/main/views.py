@@ -42,7 +42,7 @@ from ..models import User,Post
 @main.route('/',methods = ['GET','POST'])
 def index():
     form = PostForm()
-    if  form.validate_on_submit():
+    if form.validate_on_submit():
         post = Post(body = form.body.data,author = current_user._get_current_object())
         db.session.add(post)
         db.session.commit()
@@ -51,14 +51,15 @@ def index():
 
     # 通过request.args.get获取一个url所带的参数，这里是获取参数"paga"的值，如果不存在则返回默认值1
     page = request.args.get('page',1,type = int)
-    # paginate() return per_page items from page
+    # paginate() return per_page items from page，pagination是当前页中的文章（只有5个），内容
+    #随着页数page改变而变，它是个flask-sqlalchemy对象，下面的posts才是要显示的文章本体。
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page,per_page=5,error_out=False
     )
     posts = pagination.items   # items代表当前页面的项目
     return render_template('index.html',form = form , posts = posts, pagination = pagination)
 
-
+#filter_by(username = username).
 @main.route('/user/<username>')
 def user(username):
     user = User.query.filter_by(username = username).first()
@@ -66,7 +67,7 @@ def user(username):
         abort(404)
     #posts = user.posts.order_by(Post.timestamp.desc()).all()
     page = request.args.get('page',1,type = int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
         page,per_page=5,error_out=False
     )
     posts = pagination.items
@@ -113,7 +114,7 @@ def edit(id):
         return redirect(url_for('.post',id = post.id))
     form.body.data = post.body
     return render_template('edit_post.html',form = form)
-	
+
 @main.route('/follow/<username>')
 @login_required
 def follow(username):
@@ -165,5 +166,17 @@ def followed_by(username):
     follows = [{'user':item.followed,'timestamp':item.timestamp} for item in pagination.items]
     return render_template('followers.html',user = user,title = "Followed by",
                            endpoint = '.followed_by',pagination = pagination,follows = follows)
+
+
+
+
+
+
+
+
+
+
+
+
 
 

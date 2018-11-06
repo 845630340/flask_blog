@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% import "_macros.html" as macros %}
 
-{% block title %}Flasky - user{% endblock %}
+{% block title %}Flasky - user - {{ user.username }}{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
     <h1>{{ user.username }}</h1>
+	
     {% if user.name or user.location %}
     <p>
-        {% if user.name %}{{user.name }}{% endif %}
+        {% if user.name %}{{ user.name }}{% endif %}
         {% if user.location %}
             From <a href="http://maps.baidu.com/?q = {{ user.location }}">
                 {{ user.location }}
@@ -17,16 +18,13 @@
     </p>
     {% endif %}
 
-    {% if user.about_me %}
-    <p>{{ user.about_me }}</p>
-    {% endif %}
+    {% if user.about_me %} <p>{{ user.about_me }}</p> {% endif %} 
 
     <P>
-        Member since {{ user.member_since }}
-        Last seen {{ user.last_seen }}
+        Member since {{ moment(user.member_since).format('LLLL') }}.<br>
+        Last seen {{ moment(user.last_seen).fromNow(refresh = True) }}.
     </P>
-	
-	<p>{{ user.posts.count() }} blog posts.</p>
+    <p>{{ user.posts.count() }} blog posts.</p>
     <p>
         {% if False and user != current_user %}
             {% if not current_user.is_following(user) %}
@@ -52,6 +50,7 @@
         {% endif %}
     </p>
 
+
 </div>
 
 <h3>Posts by {{ user.username }}</h3>
@@ -60,7 +59,7 @@
 
 {% if pagination %}
 <div class = "pagination">
-    {{ macros.pagination_widget(pagination,'.user',username = user.username) }}
+    {{ macros.pagination_widget(pagination,'main.user',username = user.username) }}
 </div>
 {% endif %}
 

@@ -1,4 +1,4 @@
-# app/__init__.py 写工厂函数，工厂函数是主体，各种扩展的初始化
+# app/__init__.py 写工厂函数，工厂函数是主体，各种扩展的初始化，注册两个蓝本
 
 from flask import Flask
 from flask_bootstrap import Bootstrap
@@ -16,8 +16,7 @@ db = SQLAlchemy()
 pagedown = PageDown()
 
 login_manager = LoginManager()
-#login_manager.session_protection = 'strong'  # 一种强的安全等级，防止用户会话遭篡改
-login_manager.login_view = 'auth.login' #设置登录页面的视图函数，登录路由在auth蓝本中定义
+login_manager.login_view = 'auth.login' #设置登录页面的视图函数（端点），登录路由在auth蓝本中定义
 
 def create_app(config_name):
     app = Flask(__name__)
