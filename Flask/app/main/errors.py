@@ -12,8 +12,4 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 
-from datetime import datetime
-def a(*args,**kwargs):
-    def fun(*args,**kwargs):
-        return fun.datetime.now()
-    return fun
+
